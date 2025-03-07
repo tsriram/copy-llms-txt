@@ -1,12 +1,14 @@
 {
   "name": "copy-llms-txt",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "changeset": "changeset",
+    "version": "changeset version",
+    "release": "npm run build && changeset publish"
   },
   "keywords": [
     "markdown",
@@ -32,6 +34,7 @@
     "dist"
   ],
   "devDependencies": {
+    "@changesets/cli": "^2.28.1",
     "@types/turndown": "^5.0.5",
     "terser": "^5.39.0",
     "typescript": "~5.7.2",
