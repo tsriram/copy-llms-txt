@@ -161,7 +161,7 @@ class CopyLlmsTxt {
   /**
    * Clean up the DOM element by removing unwanted elements
    */
-  private cleanupDOM(element: HTMLElement): void {
+  private cleanupDOM(bodyElement: HTMLElement): void {
     // Remove common non-content elements
     const selectorsToRemove = [
       "nav",
@@ -182,8 +182,24 @@ class CopyLlmsTxt {
     ];
 
     selectorsToRemove.forEach((selector) => {
-      const elements = element.querySelectorAll(selector);
+      const elements = bodyElement.querySelectorAll(selector);
       elements.forEach((el) => el.parentNode?.removeChild(el));
+    });
+
+    // remove hidden elements
+    bodyElement.querySelectorAll("*").forEach((element) => {
+      const computedStyle = window.getComputedStyle(element);
+      const rect = element.getBoundingClientRect();
+      const isHidden =
+        computedStyle.display === "none" ||
+        computedStyle.visibility === "hidden" ||
+        computedStyle.opacity === "0" ||
+        rect.height === 0 || // Check just height being zero
+        rect.width === 0; // Check just width being zero
+
+      if (isHidden) {
+        element.parentNode?.removeChild(element);
+      }
     });
   }
 
