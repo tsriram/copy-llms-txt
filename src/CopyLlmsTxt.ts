@@ -136,13 +136,13 @@ class CopyLlmsTxt {
   private copyPageContent(): void {
     try {
       // Get the entire page content
-      const contentElement = document.body.cloneNode(true) as HTMLElement;
+      const clonedBodyElement = document.body.cloneNode(true) as HTMLElement;
 
       // Remove any unwanted elements (navigation, ads, etc.)
-      this.cleanupDOM(contentElement);
+      this.cleanupDOM(clonedBodyElement);
 
       // Convert to markdown
-      const markdown = this.turndownService.turndown(contentElement);
+      const markdown = this.turndownService.turndown(clonedBodyElement);
 
       // Copy to clipboard
       navigator.clipboard
@@ -158,10 +158,40 @@ class CopyLlmsTxt {
     }
   }
 
-  /**
-   * Clean up the DOM element by removing unwanted elements
-   */
-  private cleanupDOM(element: HTMLElement): void {
+  private removeNonVisibleElements(clonedBody: HTMLElement): void {
+    // Get all elements in the cloned body and original body
+    const originalElements = document.body.querySelectorAll("*");
+    const clonedElements = clonedBody.querySelectorAll("*");
+
+    // Ensure we have the same number of elements in both trees
+    if (originalElements.length !== clonedElements.length) {
+      console.warn("Element count mismatch between original and clone");
+    } else {
+      // Iterate through each element (backwards to handle removals)
+      for (let i = clonedElements.length - 1; i >= 0; i--) {
+        const originalElement = originalElements[i];
+        const clonedElement = clonedElements[i];
+
+        // Check visibility based on the original element
+        const computedStyle = window.getComputedStyle(originalElement);
+        const rect = originalElement.getBoundingClientRect();
+
+        const isHidden =
+          computedStyle.display === "none" ||
+          computedStyle.visibility === "hidden" ||
+          computedStyle.opacity === "0" ||
+          rect.height === 0 ||
+          rect.width === 0;
+
+        // Remove the corresponding cloned element if original is not visible
+        if (isHidden && clonedElement.parentNode) {
+          clonedElement.parentNode.removeChild(clonedElement);
+        }
+      }
+    }
+  }
+
+  private removeElementsBySelector(bodyElement: HTMLElement): void {
     // Remove common non-content elements
     const selectorsToRemove = [
       "nav",
@@ -182,9 +212,18 @@ class CopyLlmsTxt {
     ];
 
     selectorsToRemove.forEach((selector) => {
-      const elements = element.querySelectorAll(selector);
+      const elements = bodyElement.querySelectorAll(selector);
       elements.forEach((el) => el.parentNode?.removeChild(el));
     });
+  }
+
+  /**
+   * Clean up the DOM element by removing unwanted elements
+   */
+  private cleanupDOM(clonedBodyElement: HTMLElement): void {
+    // this needs to be run first before we mutate cloned body
+    this.removeNonVisibleElements(clonedBodyElement);
+    this.removeElementsBySelector(clonedBodyElement);
   }
 
   /**
