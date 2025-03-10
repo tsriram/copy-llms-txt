@@ -1,5 +1,11 @@
 # copy-llms-txt
 
+## 0.0.3
+
+### Patch Changes
+
+- fb51078: Remove hidden elements
+
 ## 0.0.2
 
 ### Patch Changes
